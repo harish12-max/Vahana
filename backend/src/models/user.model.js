@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
-const USER_ROLES = ['ADVERTISER', 'AUTO_OWNER', 'ADMIN'];
+const USER_ROLES = Object.freeze({
+  ADVERTISER: 'ADVERTISER',
+  AUTO_OWNER: 'AUTO_OWNER',
+  ADMIN: 'ADMIN',
+});
 const ACCOUNT_STATUSES = ['PENDING', 'ACTIVE', 'SUSPENDED'];
 
 const userSchema = new mongoose.Schema(
@@ -35,7 +39,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: USER_ROLES,
+      enum: Object.values(USER_ROLES),
     },
     accountStatus: {
       type: String,
@@ -59,3 +63,4 @@ const userSchema = new mongoose.Schema(
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 module.exports = User;
+module.exports.USER_ROLES = USER_ROLES;

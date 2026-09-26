@@ -7,8 +7,9 @@ const {
   signAuthToken,
 } = require('../config/auth');
 const User = require('../models/user.model');
+const { USER_ROLES } = User;
 
-const PUBLIC_REGISTRATION_ROLES = ['ADVERTISER', 'AUTO_OWNER'];
+const PUBLIC_REGISTRATION_ROLES = [USER_ROLES.ADVERTISER, USER_ROLES.AUTO_OWNER];
 
 const toSafeUser = (user) => ({
   id: user._id,
