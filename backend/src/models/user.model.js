@@ -29,7 +29,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
-      match: [/^\+?[1-9]\d{7,14}$/, 'Please provide a valid mobile number.'],
+      match: [
+        /^\+91[6-9]\d{9}$/,
+        'Please provide a valid Indian mobile number.',
+      ],
     },
     passwordHash: {
       type: String,
