@@ -6,9 +6,11 @@ const errorHandler = require('./middlewares/error-handler');
 const notFound = require('./middlewares/not-found');
 const env = require('./config/env');
 const authRoutes = require('./routes/auth.routes');
+const adminRoutes = require('./routes/admin.routes');
 const healthRoutes = require('./routes/health.routes');
 const profileRoutes = require('./routes/profile.routes');
 const testRoutes = require('./routes/test.routes');
+const vehicleRoutes = require('./routes/vehicle.routes');
 
 const app = express();
 
@@ -17,7 +19,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/profiles', profileRoutes);
+app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1', healthRoutes);
 
 if (env.nodeEnv !== 'production') {
