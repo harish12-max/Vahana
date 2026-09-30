@@ -1,3 +1,4 @@
 node_modules/
+private-uploads/
 .env
 npm-debug.log*
