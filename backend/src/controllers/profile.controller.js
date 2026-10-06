@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const AdvertiserProfile = require('../models/advertiser-profile.model');
 const AutoOwnerProfile = require('../models/auto-owner-profile.model');
 
@@ -222,6 +224,49 @@ const updateAutoOwnerProfile = async (req, res, next) => {
   }
 };
 
+const updateAutoOwnerProfileVerification = async (req, res, next) => {
+  if (!mongoose.isObjectIdOrHexString(req.params.profileId)) {
+    return sendInvalidRequest(res, 'Invalid auto owner profile ID.');
+  }
+
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return sendInvalidRequest(res, 'Request body must be an object.');
+  }
+
+  const fields = Object.keys(req.body);
+  if (fields.length !== 1 || fields[0] !== 'verificationStatus') {
+    return sendInvalidRequest(res, 'Only verificationStatus may be updated.');
+  }
+
+  const { verificationStatus } = req.body;
+  const allowedStatuses = ['APPROVED', 'REJECTED'];
+  if (typeof verificationStatus !== 'string' || !allowedStatuses.includes(verificationStatus)) {
+    return sendInvalidRequest(res, 'Invalid verification status.');
+  }
+
+  try {
+    const profile = await AutoOwnerProfile.findById(req.params.profileId);
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Auto owner profile not found.' },
+      });
+    }
+
+    if (profile.verificationStatus !== 'PENDING') {
+      return sendInvalidRequest(res, 'Only pending auto owner profiles can be reviewed.');
+    }
+
+    profile.verificationStatus = verificationStatus;
+    await profile.save();
+
+    return res.status(200).json({ success: true, data: { profile } });
+  } catch (error) {
+    return handleProfileError(error, res, next);
+  }
+};
+
 module.exports = {
   createAdvertiserProfile,
   getAdvertiserProfile,
@@ -229,4 +274,5 @@ module.exports = {
   createAutoOwnerProfile,
   getAutoOwnerProfile,
   updateAutoOwnerProfile,
+  updateAutoOwnerProfileVerification,
 };
