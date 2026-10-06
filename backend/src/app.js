@@ -14,7 +14,18 @@ const vehicleRoutes = require('./routes/vehicle.routes');
 
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || env.frontendUrls.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('CORS origin is not allowed.'));
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 
