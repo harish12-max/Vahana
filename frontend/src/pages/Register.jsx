@@ -1,10 +1,82 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { Link, useNavigate } from 'react-router-dom'
 
 function Register() {
-  const [accountType, setAccountType] = useState('AUTO_OWNER')
+  const navigate = useNavigate()
+  const [formValues, setFormValues] = useState({
+    role: 'AUTO_OWNER',
+    name: '',
+    email: '',
+    mobileNumber: '',
+    password: '',
+    confirmPassword: '',
+  })
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  const updateFormValue = (event) => {
+    const { name, value } = event.target
+    setFormValues((currentValues) => ({ ...currentValues, [name]: value }))
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+
+    if (isLoading) {
+      return
+    }
+
+    const { name, email, mobileNumber, password, confirmPassword, role } = formValues
+
+    if (!name.trim() || !email.trim() || !mobileNumber.trim() || !password || !confirmPassword) {
+      setError('Please complete all required fields.')
+      setSuccess('')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      setSuccess('')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/v1/auth/register', {
+        name: name.trim(),
+        email: email.trim(),
+        mobileNumber: mobileNumber.trim(),
+        password,
+        role,
+      })
+
+      if (response.data?.success) {
+        setSuccess('Account created successfully. Redirecting you to login...')
+        window.setTimeout(() => navigate('/login'), 1200)
+      } else {
+        setError('We could not create your account. Please try again.')
+      }
+    } catch (requestError) {
+      if (requestError.response?.status === 409) {
+        setError('An account already exists with that email address or mobile number.')
+      } else if (requestError.response?.data?.error?.message) {
+        setError(requestError.response.data.error.message)
+      } else if (!requestError.response) {
+        setError('Unable to connect to Vahana. Please check your connection and try again.')
+      } else {
+        setError('We could not create your account right now. Please try again.')
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900 sm:px-8 sm:py-14">
@@ -50,8 +122,21 @@ function Register() {
           {/* Form */}
           <form
             className="mt-8 space-y-6"
-            onSubmit={(event) => event.preventDefault()}
+            noValidate
+            onSubmit={handleSubmit}
           >
+
+            {error && (
+              <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {error}
+              </p>
+            )}
+
+            {success && (
+              <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                {success}
+              </p>
+            )}
 
             {/* User Information */}
             <div className="grid gap-5 sm:grid-cols-2">
@@ -68,8 +153,8 @@ function Register() {
                 <select
                   id="account-type"
                   name="role"
-                  value={accountType}
-                  onChange={(event) => setAccountType(event.target.value)}
+                  value={formValues.role}
+                  onChange={updateFormValue}
                   className="min-h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-[#102a43] focus:ring-4 focus:ring-[#102a43]/10"
                 >
                   <option value="AUTO_OWNER">Auto Driver</option>
@@ -90,6 +175,8 @@ function Register() {
                   id="full-name"
                   name="name"
                   type="text"
+                  value={formValues.name}
+                  onChange={updateFormValue}
                   autoComplete="name"
                   required
                   placeholder="Your full name"
@@ -110,6 +197,8 @@ function Register() {
                   id="email"
                   name="email"
                   type="email"
+                  value={formValues.email}
+                  onChange={updateFormValue}
                   autoComplete="email"
                   required
                   placeholder="you@example.com"
@@ -130,6 +219,8 @@ function Register() {
                   id="mobile-number"
                   name="mobileNumber"
                   type="tel"
+                  value={formValues.mobileNumber}
+                  onChange={updateFormValue}
                   autoComplete="tel"
                   inputMode="tel"
                   required
@@ -152,6 +243,8 @@ function Register() {
                     id="password"
                     name="password"
                     type={isPasswordVisible ? 'text' : 'password'}
+                    value={formValues.password}
+                    onChange={updateFormValue}
                     autoComplete="new-password"
                     required
                     placeholder="Create a password"
@@ -195,6 +288,8 @@ function Register() {
                     id="confirm-password"
                     name="confirmPassword"
                     type={isConfirmPasswordVisible ? 'text' : 'password'}
+                    value={formValues.confirmPassword}
+                    onChange={updateFormValue}
                     autoComplete="new-password"
                     required
                     placeholder="Confirm your password"
@@ -228,9 +323,10 @@ function Register() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="flex min-h-12 w-full items-center justify-center rounded-lg bg-[#102a43] px-5 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b] focus:outline-none focus:ring-4 focus:ring-[#102a43]/20"
+              disabled={isLoading || Boolean(success)}
+              className="flex min-h-12 w-full items-center justify-center rounded-lg bg-[#102a43] px-5 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b] focus:outline-none focus:ring-4 focus:ring-[#102a43]/20 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Create Account
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 

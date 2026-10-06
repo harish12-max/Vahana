@@ -50,6 +50,7 @@ const register = async (req, res, next) => {
       data: { user: toSafeUser(user) },
     });
   } catch (error) {
+    console.log(error)
     if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
