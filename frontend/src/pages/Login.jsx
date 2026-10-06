@@ -43,11 +43,11 @@ function Login() {
       setUser(user)
 
       if (user.role === 'ADMIN') {
-        navigate('/admin/dashboard')
+        navigate('/dashboard')
       } else if (user.role === 'ADVERTISER') {
-        navigate('/advertiser/dashboard')
+        navigate('/dashboard')
       } else if (user.role === 'AUTO_OWNER') {
-        navigate('/owner/dashboard')
+        navigate('/dashboard')
       } else {
         setError('Your account role is not supported.')
       }
