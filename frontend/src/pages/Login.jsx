@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import axiosInstance from '../api/axiosInstance'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 function Login() {
-  const navigate = useNavigate()
   const { setUser } = useAuth()
   const [formValues, setFormValues] = useState({ email: '', password: '' })
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
@@ -40,17 +39,14 @@ function Login() {
         return
       }
 
-      setUser(user)
-
-      if (user.role === 'ADMIN') {
-        navigate('/dashboard')
-      } else if (user.role === 'ADVERTISER') {
-        navigate('/dashboard')
-      } else if (user.role === 'AUTO_OWNER') {
-        navigate('/dashboard')
-      } else {
+      if (!['ADMIN', 'ADVERTISER', 'AUTO_OWNER'].includes(user.role)) {
         setError('Your account role is not supported.')
+        return
       }
+
+      // PublicRoute reacts to the updated auth state and redirects to /dashboard.
+      // Avoid navigating here as well, which can race the route guard update.
+      setUser(user)
     } catch (requestError) {
       if (requestError.response?.status === 401) {
         setError('Invalid email or password.')
