@@ -12,18 +12,40 @@ function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
 
-      <Route element={<PublicRoute />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Route>
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        }
+      />
 
-      <Route element={<ProtectedRoute allowedRoles={['ADVERTISER', 'AUTO_OWNER', 'ADMIN']} />}>
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Route>
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={['ADVERTISER', 'AUTO_OWNER', 'ADMIN']}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route element={<ProtectedRoute allowedRoles={['ADVERTISER']} />}>
-        <Route path="/advertiser/profile" element={<AdvertiserProfile />} />
-      </Route>
+      <Route
+        path="/advertiser/profile"
+        element={
+          <ProtectedRoute allowedRoles={['ADVERTISER']}>
+            <AdvertiserProfile />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }
