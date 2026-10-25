@@ -1,27 +1,39 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import axiosInstance from '../api/axiosInstance'
 
-const AuthContext = createContext()
+const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState()
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
+
     const checkAuth = async () => {
       try {
         const response = await axiosInstance.get('/auth/me')
-          setUser(response.data)
-      
-      } catch { 
+        const currentUser = response.data?.data?.user
+
+        if (isMounted) {
+          setUser(response.data?.success && currentUser ? currentUser : null)
+        }
+      } catch {
+        if (isMounted) {
           setUser(null)
+        }
       } finally {
+        if (isMounted) {
           setLoading(false)
+        }
       }
     }
 
     checkAuth()
 
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const logout = async () => {
@@ -41,4 +53,12 @@ export function AuthProvider({ children }) {
   )
 }
 
-export const useAuth = ()=> useContext(AuthContext);
+export function useAuth() {
+  const context = useContext(AuthContext)
+
+  if (!context) {
+    throw new Error('useAuth must be used inside AuthProvider')
+  }
+
+  return context
+}
