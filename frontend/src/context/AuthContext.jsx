@@ -8,18 +8,30 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadCurrentUser = async () => {
+    let active = true
+
+    const checkAuth = async () => {
       try {
         const response = await axiosInstance.get('/auth/me')
-        setUser(response.data?.data?.user ?? null)
+        if (active) {
+          setUser(response.data?.data?.user ?? null)
+        }
       } catch {
-        setUser(null)
+        if (active) {
+          setUser(null)
+        }
       } finally {
-        setLoading(false)
+        if (active) {
+          setLoading(false)
+        }
       }
     }
 
-    loadCurrentUser()
+    checkAuth()
+
+    return () => {
+      active = false
+    }
   }, [])
 
   const logout = async () => {
