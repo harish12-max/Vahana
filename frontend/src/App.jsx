@@ -13,7 +13,14 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Landing />
+              </PublicRoute>
+            }
+          />
 
           <Route
             path="/login"
@@ -23,6 +30,7 @@ function App() {
               </PublicRoute>
             }
           />
+
           <Route
             path="/register"
             element={
