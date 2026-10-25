@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import axiosInstance from '../api/axiosInstance'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 function Login() {
+  const navigate = useNavigate()
   const { setUser } = useAuth()
   const [formValues, setFormValues] = useState({ email: '', password: '' })
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
@@ -44,9 +45,9 @@ function Login() {
         return
       }
 
-      // PublicRoute reacts to the updated auth state and redirects to /dashboard.
-      // Avoid navigating here as well, which can race the route guard update.
       setUser(user)
+      // Replace the login history entry so Back does not revisit the login page.
+      navigate('/dashboard', { replace: true })
     } catch (requestError) {
       if (requestError.response?.status === 401) {
         setError('Invalid email or password.')
