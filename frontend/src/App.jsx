@@ -3,6 +3,7 @@ import Landing from './pages/Landing.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import AdvertiserProfile from './pages/AdvertiserProfile.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 
 function App() {
@@ -14,6 +15,10 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
+      </Route>
+
+      <Route element={<ProtectedRoute allowedRoles={['ADVERTISER']} />}>
+        <Route path="/advertiser/profile" element={<AdvertiserProfile />} />
       </Route>
     </Routes>
   )

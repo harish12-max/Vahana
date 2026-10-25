@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 function Dashboard() {
@@ -28,6 +28,14 @@ function Dashboard() {
             Welcome, {user.name}. Your authentication is working and your role
             is <strong>{user.role}</strong>.
           </p>
+          {user.role === 'ADVERTISER' && (
+            <Link
+              to="/advertiser/profile"
+              className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b]"
+            >
+              Manage business profile
+            </Link>
+          )}
         </div>
       </div>
     </main>
