@@ -38,6 +38,36 @@ function Dashboard() {
               Manage business profile
             </Link>
           )}
+          {user.role === 'AUTO_OWNER' && (
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                to="/auto-owner/profile"
+                className="inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b]"
+              >
+                Manage auto-owner profile
+              </Link>
+              <Link
+                to="/vehicles"
+                className="inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b]"
+              >
+                Manage vehicles
+              </Link>
+              <Link
+                to="/vehicle-documents"
+                className="inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b]"
+              >
+                Manage vehicle documents
+              </Link>
+            </div>
+          )}
+          {user.role === 'ADMIN' && (
+            <Link
+              to="/admin"
+              className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b]"
+            >
+              Open admin dashboard
+            </Link>
+          )}
         </div>
       </div>
     </main>
