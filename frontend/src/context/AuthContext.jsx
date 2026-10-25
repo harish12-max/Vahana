@@ -23,11 +23,13 @@ export function AuthProvider({ children }) {
   }, [])
 
   const logout = async () => {
-    try {
-      await axiosInstance.post('/auth/logout')
-    } finally {
-      setUser(null)
+    const response = await axiosInstance.post('/auth/logout')
+
+    if (!response.data?.success) {
+      throw new Error('Logout was not completed.')
     }
+
+    setUser(null)
   }
 
   return (

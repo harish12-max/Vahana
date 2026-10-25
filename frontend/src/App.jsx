@@ -13,7 +13,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      <Route element={<ProtectedRoute />}>
+      <Route element={<ProtectedRoute allowedRoles={['ADVERTISER', 'AUTO_OWNER', 'ADMIN']} />}>
         <Route path="/dashboard" element={<Dashboard />} />
       </Route>
 

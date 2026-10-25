@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../api/axiosInstance'
+import LogoutButton from '../components/LogoutButton.jsx'
 
 const emptyProfile = {
   businessName: '',
@@ -146,7 +147,10 @@ function AdvertiserProfile() {
           <p className="text-sm font-bold tracking-[0.14em] text-amber-600">VAHANA</p>
           <h1 className="mt-3 text-2xl font-black text-[#102a43]">Profile unavailable</h1>
           <p role="alert" className="mt-3 text-sm leading-6 text-slate-600">{loadError}</p>
-          <Link to="/dashboard" className="mt-6 inline-flex rounded-lg bg-[#102a43] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#183b5b]">Return to dashboard</Link>
+          <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
+            <Link to="/dashboard" className="inline-flex rounded-lg bg-[#102a43] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#183b5b]">Return to dashboard</Link>
+            <LogoutButton className="text-[#102a43]" />
+          </div>
         </section>
       </main>
     )
@@ -161,8 +165,13 @@ function AdvertiserProfile() {
         </Link>
 
         <header className="mt-8 rounded-2xl bg-[#102a43] p-6 text-white shadow-xl shadow-slate-900/15 sm:p-8">
-          <p className="text-sm font-bold tracking-[0.14em] text-amber-300">ADVERTISER PROFILE</p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Your business details</h1>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-bold tracking-[0.14em] text-amber-300">ADVERTISER PROFILE</p>
+              <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Your business details</h1>
+            </div>
+            <LogoutButton />
+          </div>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Keep your business information current so Vahana can support your local advertising journey.</p>
         </header>
 

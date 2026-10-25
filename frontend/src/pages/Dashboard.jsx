@@ -1,12 +1,9 @@
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import LogoutButton from '../components/LogoutButton.jsx'
 
 function Dashboard() {
   const { user } = useAuth()
-
-  if (!user) {
-    return <Navigate to="/login" replace />
-  }
 
   const dashboardNames = {
     ADMIN: 'Admin Dashboard',
@@ -18,12 +15,17 @@ function Dashboard() {
     <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900">
       <div className="mx-auto max-w-4xl">
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5">
-          <p className="text-sm font-bold tracking-[0.14em] text-amber-600">
-            VAHANA
-          </p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-[#102a43]">
-            {dashboardNames[user.role] || 'Dashboard'}
-          </h1>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-bold tracking-[0.14em] text-amber-600">
+                VAHANA
+              </p>
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#102a43]">
+                {dashboardNames[user.role] || 'Dashboard'}
+              </h1>
+            </div>
+            <LogoutButton className="text-[#102a43]" />
+          </div>
           <p className="mt-3 text-slate-600">
             Welcome, {user.name}. Your authentication is working and your role
             is <strong>{user.role}</strong>.
