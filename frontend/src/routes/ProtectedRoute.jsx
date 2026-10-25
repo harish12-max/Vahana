@@ -6,14 +6,18 @@ function ProtectedRoute({ children, allowedRoles }) {
 
   if (loading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-slate-50 text-[#102a43]">
+      <main className="grid min-h-screen place-items-center bg-slate-50 text-[#102a43]">
         <p className="text-sm font-semibold">Loading...</p>
-      </div>
+      </main>
     )
   }
 
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />
   }
 
   return children
