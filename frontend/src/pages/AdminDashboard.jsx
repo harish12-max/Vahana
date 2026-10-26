@@ -75,6 +75,9 @@ function AdminDashboard() {
     const [reviewTarget, setReviewTarget] = useState(null);
     const [rejectionReason, setRejectionReason] = useState('');
     const [submittingId, setSubmittingId] = useState('');
+    const [documentPreview, setDocumentPreview] = useState(null);
+    const [previewLoadingId, setPreviewLoadingId] = useState('');
+    const [previewError, setPreviewError] = useState('');
 
     const loadData = async () => {
         const [vehicleResponse, documentResponse] =
@@ -149,6 +152,75 @@ function AdminDashboard() {
             ({ verificationStatus }) =>
                 verificationStatus === 'PENDING'
         ).length;
+
+    const openDocumentPreview = async (document) => {
+        setPreviewError('');
+        setDocumentPreview(null);
+        setPreviewLoadingId(document._id);
+
+        try {
+            const response = await axiosInstance.get(
+                `/admin/documents/${document._id}/file`,
+                { responseType: 'blob' }
+            );
+
+            const previewUrl = URL.createObjectURL(response.data);
+
+            setDocumentPreview({
+                document,
+                url: previewUrl,
+                mimeType: response.data.type || document.mimeType,
+            });
+        } catch (error) {
+            setPreviewError(
+                getErrorMessage(
+                    error,
+                    'We could not open this document. Please try again.'
+                )
+            );
+        } finally {
+            setPreviewLoadingId('');
+        }
+    };
+
+    const closeDocumentPreview = () => {
+        if (documentPreview?.url) {
+            URL.revokeObjectURL(documentPreview.url);
+        }
+
+        setDocumentPreview(null);
+        setPreviewError('');
+    };
+
+    const downloadDocument = async (document) => {
+        setPreviewError('');
+        setPreviewLoadingId(document._id);
+
+        try {
+            const response = await axiosInstance.get(
+                `/admin/documents/${document._id}/file`,
+                { responseType: 'blob' }
+            );
+
+            const downloadUrl = URL.createObjectURL(response.data);
+            const link = window.document.createElement('a');
+            link.href = downloadUrl;
+            link.download = document.originalFilename || 'vehicle-document';
+            window.document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+        } catch (error) {
+            setPreviewError(
+                getErrorMessage(
+                    error,
+                    'We could not download this document. Please try again.'
+                )
+            );
+        } finally {
+            setPreviewLoadingId('');
+        }
+    };
 
     const beginReview = (kind, item, status) => {
         setActionError('');
@@ -603,6 +675,30 @@ function AdminDashboard() {
                                                     : ''}
                                             </p>
 
+                                            <div className="mt-4 flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    disabled={previewLoadingId === document._id}
+                                                    onClick={() => openDocumentPreview(document)}
+                                                    className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#102a43] px-3 text-sm font-bold text-white transition hover:bg-[#183b5b] disabled:cursor-not-allowed disabled:opacity-70"
+                                                >
+                                                    {previewLoadingId === document._id
+                                                        ? 'Opening...'
+                                                        : 'View document'}
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    disabled={previewLoadingId === document._id}
+                                                    onClick={() => downloadDocument(document)}
+                                                    className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#102a43] px-3 text-sm font-bold text-[#102a43] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                                                >
+                                                    {previewLoadingId === document._id
+                                                        ? 'Loading...'
+                                                        : 'Download'}
+                                                </button>
+                                            </div>
+
                                             {document.verificationStatus ===
                                                 'REJECTED' &&
                                                 document.rejectionReason && (
@@ -628,6 +724,108 @@ function AdminDashboard() {
                         </div>
                     )}
                 </section>
+
+                {previewError && (
+                    <div
+                        className="fixed bottom-5 right-5 z-30 max-w-md rounded-xl border border-red-200 bg-white p-4 text-sm font-semibold text-red-700 shadow-xl"
+                        role="alert"
+                    >
+                        <div className="flex items-start justify-between gap-4">
+                            <p>{previewError}</p>
+                            <button
+                                type="button"
+                                onClick={() => setPreviewError('')}
+                                className="font-black text-red-700"
+                                aria-label="Dismiss document error"
+                            >
+                                ×
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {documentPreview && (
+                    <div
+                        className="fixed inset-0 z-30 flex items-center justify-center bg-slate-950/70 p-4 sm:p-6"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="document-preview-title"
+                        onClick={(event) => {
+                            if (event.target === event.currentTarget) {
+                                closeDocumentPreview();
+                            }
+                        }}
+                    >
+                        <section className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+                            <header className="flex items-start justify-between gap-4 border-b border-slate-200 p-4 sm:p-5">
+                                <div className="min-w-0">
+                                    <h2
+                                        id="document-preview-title"
+                                        className="text-lg font-black text-[#102a43]"
+                                    >
+                                        {formatDocumentType(documentPreview.document.documentType)}
+                                    </h2>
+                                    <p className="mt-1 break-all text-sm text-slate-600">
+                                        {documentPreview.document.originalFilename}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={closeDocumentPreview}
+                                    className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-slate-200 text-xl font-bold text-[#102a43] hover:bg-slate-50"
+                                    aria-label="Close document preview"
+                                >
+                                    ×
+                                </button>
+                            </header>
+
+                            <div className="min-h-0 flex-1 overflow-auto bg-slate-100 p-3 sm:p-5">
+                                {documentPreview.mimeType?.startsWith('image/') ? (
+                                    <img
+                                        src={documentPreview.url}
+                                        alt={documentPreview.document.originalFilename}
+                                        className="mx-auto h-auto max-h-[70vh] max-w-full rounded-lg object-contain"
+                                    />
+                                ) : documentPreview.mimeType === 'application/pdf' ? (
+                                    <iframe
+                                        title={documentPreview.document.originalFilename}
+                                        src={documentPreview.url}
+                                        className="h-[70vh] w-full rounded-lg border border-slate-300 bg-white"
+                                    />
+                                ) : (
+                                    <div className="grid min-h-64 place-items-center rounded-xl bg-white p-6 text-center">
+                                        <div>
+                                            <p className="font-bold text-[#102a43]">
+                                                Preview is not available for this file type.
+                                            </p>
+                                            <p className="mt-2 text-sm text-slate-600">
+                                                Download the document to inspect it.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <footer className="flex flex-wrap justify-end gap-2 border-t border-slate-200 p-4">
+                                <button
+                                    type="button"
+                                    onClick={() => downloadDocument(documentPreview.document)}
+                                    disabled={previewLoadingId === documentPreview.document._id}
+                                    className="min-h-10 rounded-lg border border-[#102a43] px-4 text-sm font-bold text-[#102a43] hover:bg-slate-50 disabled:opacity-60"
+                                >
+                                    Download
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={closeDocumentPreview}
+                                    className="min-h-10 rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white hover:bg-[#183b5b]"
+                                >
+                                    Close
+                                </button>
+                            </footer>
+                        </section>
+                    </div>
+                )}
 
                 {reviewTarget && (
                     <div
