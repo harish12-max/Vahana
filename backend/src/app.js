@@ -11,6 +11,7 @@ const healthRoutes = require('./routes/health.routes');
 const profileRoutes = require('./routes/profile.routes');
 const testRoutes = require('./routes/test.routes');
 const vehicleRoutes = require('./routes/vehicle.routes');
+const campaignRoutes = require('./routes/campaign.routes');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/profiles', profileRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
+app.use('/api/v1/campaigns', campaignRoutes);
 app.use('/api/v1', healthRoutes);
 
 if (env.nodeEnv !== 'production') {

@@ -31,12 +31,7 @@ function Dashboard() {
             is <strong>{user.role}</strong>.
           </p>
           {user.role === 'ADVERTISER' && (
-            <Link
-              to="/advertiser/profile"
-              className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b]"
-            >
-              Manage business profile
-            </Link>
+            <div className="mt-6 flex flex-wrap gap-3"><Link to="/advertiser/profile" className="inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white">Manage business profile</Link><Link to="/advertiser/campaigns" className="inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white">Manage campaigns</Link></div>
           )}
           {user.role === 'AUTO_OWNER' && (
             <div className="mt-6 flex flex-wrap gap-3">
@@ -58,15 +53,11 @@ function Dashboard() {
               >
                 Manage vehicle documents
               </Link>
+              <Link to="/auto-owner/campaigns" className="inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b]">Discover campaigns</Link>
             </div>
           )}
           {user.role === 'ADMIN' && (
-            <Link
-              to="/admin"
-              className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white shadow-lg shadow-slate-900/15 transition hover:bg-[#183b5b]"
-            >
-              Open admin dashboard
-            </Link>
+            <div className="mt-6 flex flex-wrap gap-3"><Link to="/admin" className="inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white">Open admin dashboard</Link><Link to="/admin/campaigns" className="inline-flex min-h-11 items-center rounded-lg bg-[#102a43] px-4 text-sm font-bold text-white">Review campaigns</Link></div>
           )}
         </div>
       </div>

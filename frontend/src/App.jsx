@@ -8,6 +8,9 @@ import AutoOwnerProfile from './pages/AutoOwnerProfile.jsx'
 import VehicleManagement from './pages/VehicleManagement.jsx'
 import VehicleDocuments from './pages/VehicleDocuments.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
+import AdvertiserCampaigns from './pages/AdvertiserCampaigns.jsx'
+import AutoOwnerCampaigns from './pages/AutoOwnerCampaigns.jsx'
+import AdminCampaigns from './pages/AdminCampaigns.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import PublicRoute from './routes/PublicRoute.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
@@ -89,6 +92,18 @@ function App() {
             }
           />
 
+          <Route
+            path="/advertiser/campaigns"
+            element={<ProtectedRoute allowedRoles={['ADVERTISER']}><AdvertiserCampaigns /></ProtectedRoute>}
+          />
+          <Route
+            path="/auto-owner/campaigns"
+            element={<ProtectedRoute allowedRoles={['AUTO_OWNER']}><AutoOwnerCampaigns /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/campaigns"
+            element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminCampaigns /></ProtectedRoute>}
+          />
           <Route
             path="/admin"
             element={
