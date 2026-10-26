@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 
 const errorText = (error) => error.response?.data?.error?.message || 'We could not load your dashboard.'
-const Stat = ({ label, value, tone = 'navy' }) => <article className={`dashboard-stat ${tone}`}><p>{label}</p><strong>{value}</strong></article>
+const Stat = ({ label, value, tone = 'navy' }) => <article className={`dashboard-stat ${tone}`}><p>{label}</p><strong>{typeof value === 'string' && ['APPROVED','ACTIVE','COMPLETED','PENDING','PENDING_PAYMENT','REJECTED','CANCELLED','SUSPENDED'].includes(value.toUpperCase()) ? <StatusBadge status={value} /> : value}</strong></article>
 
 export default function Dashboard() {
   const { user } = useAuth(); const [data, setData] = useState(null); const [error, setError] = useState('')
