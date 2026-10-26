@@ -20,7 +20,8 @@ const parseKey = (key) => {
         if (
             !parsed ||
             typeof parsed.publicId !== 'string' ||
-            !['image', 'raw'].includes(parsed.resourceType)
+            !['image', 'raw'].includes(parsed.resourceType) ||
+            (parsed.format && !['pdf', 'jpg', 'png'].includes(parsed.format))
         ) {
             return null;
         }
@@ -40,9 +41,10 @@ const uploadBuffer = (buffer, options) =>
                     return reject(new Error('Cloudinary returned an invalid upload result.'));
                 }
                 return resolve(result);
-            }
+            },
         );
 
+        uploadStream.on('error', reject);
         Readable.from([buffer]).pipe(uploadStream);
     });
 
@@ -52,30 +54,42 @@ const save = async (file) => {
         throw new Error('Unsupported document file type.');
     }
 
-    // Use Cloudinary's image resource type for image previews and raw for PDFs.
     const resourceType = file.mimetype === 'application/pdf' ? 'raw' : 'image';
     const publicId = crypto.randomUUID();
+    // Raw assets need their file extension in the public ID for reliable delivery.
+    const uploadPublicId = resourceType === 'raw' ? `${publicId}${extension}` : publicId;
 
     const result = await uploadBuffer(file.buffer, {
         folder: 'vahana/documents',
-        public_id: publicId,
+        public_id: uploadPublicId,
         resource_type: resourceType,
-        ...(resourceType === 'raw' ? { use_filename: false, unique_filename: false } : {}),
-        format: extension.slice(1),
         overwrite: false,
     });
 
     return JSON.stringify({
         publicId: result.public_id,
         resourceType: result.resource_type,
-        format: result.format,
+        format: result.format || extension.slice(1),
+    });
+};
+
+const getSignedUrl = (asset) => {
+    // Sign the server-generated URL instead of persisting a delivery URL in MongoDB.
+    // Random IDs make asset URLs difficult to guess; the app still requires auth
+    // for every download through the existing API route.
+    return cloudinary.url(asset.publicId, {
+        resource_type: asset.resourceType,
+        type: 'upload',
+        secure: true,
+        sign_url: true,
+        ...(asset.resourceType === 'raw' ? {} : { format: asset.format }),
     });
 };
 
 const read = async (key) => {
     const asset = parseKey(key);
 
-    // Read documents saved before Cloudinary was introduced.
+    // Compatibility with documents uploaded before Cloudinary was configured.
     if (!asset) {
         if (typeof key !== 'string' || !/^[0-9a-f-]{36}\.(pdf|jpg|png)$/i.test(key)) {
             return null;
@@ -91,24 +105,12 @@ const read = async (key) => {
         }
     }
 
-    // Use a short-lived signed URL from the server SDK, then stream it through
-    // the existing authenticated backend endpoint instead of exposing it in MongoDB.
-    const signedUrl = cloudinary.url(asset.publicId, {
-        resource_type: asset.resourceType,
-        type: 'upload',
-        secure: true,
-        sign_url: true,
-        expires_at: Math.floor(Date.now() / 1000) + 60,
-        ...(asset.format ? { format: asset.format } : {}),
-    });
-
+    const signedUrl = getSignedUrl(asset);
     return new Promise((resolve, reject) => {
         const request = https.get(signedUrl, (response) => {
             if (response.statusCode !== 200) {
                 response.resume();
-                if ([401, 403, 404].includes(response.statusCode)) {
-                    return resolve(null);
-                }
+                if ([401, 403, 404].includes(response.statusCode)) return resolve(null);
                 return reject(new Error(`Cloudinary file request failed with status ${response.statusCode}.`));
             }
             return resolve(response);
