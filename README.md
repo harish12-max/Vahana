@@ -8,7 +8,7 @@ Vahana is a web-based platform designed to connect vehicle owners with advertise
 |---|---|
 | Frontend Application | [Add your live frontend URL] |
 | Backend API | [Add your live backend URL] |
-| API Health Check | [Add your health-check URL] |
+| API Health Check |(http://localhost:5001/api/v1/health) |
 | GitHub Repository | https://github.com/harish12-max/Vahana |
 
 ## Project Overview
@@ -113,10 +113,8 @@ The following details are reserved for providing your instructor with access to 
 
 | Detail | Value |
 |---|---|
-| Admin Login URL | [Add admin login URL] |
-| Admin Email / Username | [Share privately with instructor] |
-| Admin Password | [Share privately with instructor] |
-| Admin Creation Key (if applicable) | [Share privately if required] |
+| Admin Email | harish12@gmail.com |
+| Admin Password | 1234567890 |
 
 **Security note:** Do not publish admin passwords, secret keys, database credentials, JWT secrets, or Cloudinary API secrets in this public README. Share temporary demonstration credentials privately with your instructor and change or revoke them after the evaluation.
 
@@ -158,7 +156,7 @@ MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_strong_random_jwt_secret
 JWT_EXPIRES_IN=7d
 
-FRONTEND_URLS=http://localhost:5174
+FRONTEND_URLS=http://localhost:5173
 
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
