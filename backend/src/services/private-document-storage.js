@@ -21,7 +21,7 @@ const parseKey = (key) => {
             !parsed ||
             typeof parsed.publicId !== 'string' ||
             !['image', 'raw'].includes(parsed.resourceType) ||
-            (parsed.format && !['pdf', 'jpg', 'png'].includes(parsed.format)) ||
+            (parsed.format && !['pdf', 'jpg', 'png'].includes(parsed.format))
         ) {
             return null;
         }
