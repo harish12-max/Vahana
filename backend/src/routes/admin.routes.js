@@ -8,6 +8,7 @@ const { updateAutoOwnerProfileVerification } = require('../controllers/profile.c
 const { getDocumentsForAdmin, downloadAdminDocument, updateDocumentVerification } = require('../controllers/document.controller');
 const { USER_ROLES } = require('../models/user.model');
 const { getAdminCampaigns, getAdminCampaign, reviewCampaign } = require('../controllers/campaign.controller');
+const { getUserOverview } = require('../controllers/admin.controller');
 const authenticate = require('../middlewares/authenticate');
 const requireRole = require('../middlewares/require-role');
 
@@ -21,6 +22,7 @@ router.patch('/auto-owners/:profileId/verification', updateAutoOwnerProfileVerif
 router.get('/documents', getDocumentsForAdmin);
 router.get('/documents/:documentId/file', downloadAdminDocument);
 router.patch('/documents/:documentId/verification', updateDocumentVerification);
+router.get('/users-overview', getUserOverview);
 router.get('/campaigns', getAdminCampaigns);
 router.get('/campaigns/:campaignId', getAdminCampaign);
 router.patch('/campaigns/:campaignId/review', reviewCampaign);

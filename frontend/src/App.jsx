@@ -11,6 +11,7 @@ import AdminDashboard from './pages/AdminDashboard.jsx'
 import AdvertiserCampaigns from './pages/AdvertiserCampaigns.jsx'
 import AutoOwnerCampaigns from './pages/AutoOwnerCampaigns.jsx'
 import AdminCampaigns from './pages/AdminCampaigns.jsx'
+import AdminUsers from './pages/AdminUsers.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import PublicRoute from './routes/PublicRoute.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
@@ -99,6 +100,10 @@ function App() {
           <Route
             path="/auto-owner/campaigns"
             element={<ProtectedRoute allowedRoles={['AUTO_OWNER']}><AutoOwnerCampaigns /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/users"
+            element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminUsers /></ProtectedRoute>}
           />
           <Route
             path="/admin/campaigns"
