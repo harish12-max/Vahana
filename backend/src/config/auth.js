@@ -26,7 +26,7 @@ const verifyAuthToken = (token) => {
 const authCookieOptions = {
   httpOnly: true,
   secure: env.nodeEnv === 'production',
-  sameSite: 'lax',
+  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
   path: '/',
   maxAge: AUTH_COOKIE_MAX_AGE,
 };
