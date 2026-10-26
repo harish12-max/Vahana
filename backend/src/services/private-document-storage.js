@@ -45,7 +45,9 @@ const uploadBuffer = (buffer, options) =>
         );
 
         uploadStream.on('error', reject);
-        Readable.from([buffer]).pipe(uploadStream);
+        const input = Readable.from([buffer]);
+        input.on('error', reject);
+        input.pipe(uploadStream);
     });
 
 const save = async (file) => {
@@ -111,7 +113,16 @@ const read = async (key) => {
         const request = https.get(signedUrl, (response) => {
             if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
                 response.resume();
-                https.get(response.headers.location, (redirectedResponse) => {
+                let redirectUrl;
+                try {
+                    redirectUrl = new URL(response.headers.location, signedUrl);
+                } catch (error) {
+                    return reject(new Error('Cloudinary returned an invalid redirect URL.'));
+                }
+                if (redirectUrl.protocol !== 'https:') {
+                    return reject(new Error('Cloudinary returned a non-HTTPS redirect URL.'));
+                }
+                https.get(redirectUrl, (redirectedResponse) => {
                     if (redirectedResponse.statusCode !== 200) {
                         redirectedResponse.resume();
                         if ([401, 403, 404].includes(redirectedResponse.statusCode)) return resolve(null);
@@ -128,6 +139,9 @@ const read = async (key) => {
                 return reject(new Error(`Cloudinary file request failed with status ${response.statusCode}.`));
             }
             return resolve(response);
+        });
+        request.setTimeout(15000, () => {
+            request.destroy(new Error('Timed out while downloading the Cloudinary document.'));
         });
         request.on('error', reject);
     });
