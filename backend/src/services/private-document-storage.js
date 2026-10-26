@@ -75,16 +75,16 @@ const save = async (file) => {
 };
 
 const getSignedUrl = (asset) => {
-    // Sign the server-generated URL instead of persisting a delivery URL in MongoDB.
-    // Random IDs make asset URLs difficult to guess; the app still requires auth
-    // for every download through the existing API route.
-    return cloudinary.url(asset.publicId, {
-        resource_type: asset.resourceType,
-        type: 'authenticated',
-        secure: true,
-        sign_url: true,
-        ...(asset.resourceType === 'raw' ? {} : { format: asset.format }),
-    });
+    // Cloudinary's private_download_url creates a signed URL with an expiry time.
+    return cloudinary.utils.private_download_url(
+        asset.publicId,
+        asset.format,
+        {
+            resource_type: asset.resourceType,
+            type: 'authenticated',
+            expires_at: Math.floor(Date.now() / 1000) + 60,
+        },
+    );
 };
 
 const read = async (key) => {
@@ -147,6 +147,7 @@ const remove = async (key) => {
 
     await cloudinary.uploader.destroy(asset.publicId, {
         resource_type: asset.resourceType,
+        type: 'authenticated',
         invalidate: true,
     });
 };
