@@ -22,7 +22,6 @@ const parseKey = (key) => {
             typeof parsed.publicId !== 'string' ||
             !['image', 'raw'].includes(parsed.resourceType) ||
             (parsed.format && !['pdf', 'jpg', 'png'].includes(parsed.format)) ||
-            !parsed.publicId.startsWith('vahana/documents/')
         ) {
             return null;
         }
@@ -65,6 +64,7 @@ const save = async (file) => {
         public_id: uploadPublicId,
         resource_type: resourceType,
         overwrite: false,
+        type: 'authenticated',
     });
 
     return JSON.stringify({
@@ -80,7 +80,7 @@ const getSignedUrl = (asset) => {
     // for every download through the existing API route.
     return cloudinary.url(asset.publicId, {
         resource_type: asset.resourceType,
-        type: 'upload',
+        type: 'authenticated',
         secure: true,
         sign_url: true,
         ...(asset.resourceType === 'raw' ? {} : { format: asset.format }),
