@@ -227,7 +227,7 @@ export default function AdvertiserCampaigns() {
               ))}
 
               <label className="text-sm font-bold text-slate-700">
-                Description
+                Description about price and campaign
                 <textarea
                   required
                   minLength="10"
