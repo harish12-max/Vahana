@@ -108,6 +108,19 @@ const read = async (key) => {
     const signedUrl = getSignedUrl(asset);
     return new Promise((resolve, reject) => {
         const request = https.get(signedUrl, (response) => {
+            if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+                response.resume();
+                https.get(response.headers.location, (redirectedResponse) => {
+                    if (redirectedResponse.statusCode !== 200) {
+                        redirectedResponse.resume();
+                        if ([401, 403, 404].includes(redirectedResponse.statusCode)) return resolve(null);
+                        return reject(new Error(`Cloudinary file request failed with status ${redirectedResponse.statusCode}.`));
+                    }
+                    return resolve(redirectedResponse);
+                }).on('error', reject);
+                return;
+            }
+
             if (response.statusCode !== 200) {
                 response.resume();
                 if ([401, 403, 404].includes(response.statusCode)) return resolve(null);
