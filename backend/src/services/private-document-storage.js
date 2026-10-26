@@ -1,7 +1,12 @@
 const crypto = require('crypto');
 const https = require('https');
+const fs = require('fs/promises');
+const path = require('path');
+const { createReadStream } = require('fs');
 const { Readable } = require('stream');
 const cloudinary = require('cloudinary').v2;
+
+const legacyDirectory = path.resolve(__dirname, '../../private-uploads');
 
 const extensions = {
     'application/pdf': '.pdf',
@@ -36,7 +41,7 @@ const uploadBuffer = (buffer, options) =>
                 return resolve(result);
             }
         );
-        Readable.from(buffer).pipe(stream);
+        Readable.from([buffer]).pipe(stream);
     });
 
 const save = async (file) => {
@@ -62,7 +67,16 @@ const save = async (file) => {
 
 const read = async (key) => {
     const asset = parseKey(key);
-    if (!asset) return null;
+    if (!asset) {
+        if (!/^[0-9a-f-]{36}\\.(pdf|jpg|png)$/i.test(key)) return null;
+        try {
+            await fs.access(path.join(legacyDirectory, key));
+            return createReadStream(path.join(legacyDirectory, key));
+        } catch (error) {
+            if (error.code === 'ENOENT') return null;
+            throw error;
+        }
+    }
 
     return new Promise((resolve, reject) => {
         const request = https.get(asset.secureUrl, (response) => {
@@ -79,7 +93,14 @@ const read = async (key) => {
 
 const remove = async (key) => {
     const asset = parseKey(key);
-    if (!asset) return;
+    if (!asset) {
+        if (/^[0-9a-f-]{36}\\.(pdf|jpg|png)$/i.test(key)) {
+            return fs.unlink(path.join(legacyDirectory, key)).catch((error) => {
+                if (error.code !== 'ENOENT') throw error;
+            });
+        }
+        return;
+    }
 
     await cloudinary.uploader.destroy(asset.publicId, {
         resource_type: asset.resourceType,
