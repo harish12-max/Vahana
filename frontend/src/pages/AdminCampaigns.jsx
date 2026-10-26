@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../api/axiosInstance'
 import LogoutButton from '../components/LogoutButton.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 const errorText = (error, fallback) => error.response?.data?.error?.message || fallback
-const statusName = (status) => status?.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+const statusName = (status) => <StatusBadge status={status} />
 export default function AdminCampaigns() {
   const [campaigns, setCampaigns] = useState([]); const [filter, setFilter] = useState('PENDING'); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const loadPromise = useRef(null); const loadingStatus = useRef(null); const filterRef = useRef('PENDING')
   const load = async (status = filterRef.current) => { if (loadPromise.current && loadingStatus.current === status) return loadPromise.current; const request = axiosInstance.get('/admin/campaigns', { params: status ? { status } : {} }).then((response) => { if (filterRef.current === status) setCampaigns(response.data?.data?.campaigns || []) }); loadPromise.current = request; loadingStatus.current = status; try { return await request } finally { if (loadPromise.current === request) { loadPromise.current = null; loadingStatus.current = null } } }

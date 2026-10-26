@@ -37,7 +37,9 @@ const createCampaign = async (req, res, next) => {
 
 const addParticipants = async (campaigns) => {
   const ids = campaigns.map((campaign) => campaign._id);
+  if (ids.length === 0) return [];
   const participations = await CampaignParticipation.find({ campaign: { $in: ids } })
+    .select('campaign autoOwner vehicle status createdAt')
     .populate({ path: 'autoOwner', select: 'user city locality', populate: { path: 'user', select: 'name email mobileNumber' } })
     .populate('vehicle', 'registrationNumber vehicleType')
     .sort({ createdAt: -1 });

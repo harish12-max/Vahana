@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../api/axiosInstance'
 import LogoutButton from '../components/LogoutButton.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 
 const emptyVehicle = {
   registrationNumber: '',
@@ -20,9 +21,6 @@ const toFormValues = (vehicle) =>
 
 const getErrorMessage = (error, fallback) =>
   error.response?.data?.error?.message || fallback
-
-const formatStatus = (status) =>
-  status ? `${status.charAt(0)}${status.slice(1).toLowerCase()}` : 'Pending'
 
 function VehicleManagement() {
   const [vehicles, setVehicles] = useState([])
@@ -301,7 +299,7 @@ function VehicleManagement() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h2 id="vehicle-details-heading" className="text-xl font-black text-[#102a43]">Vehicle details</h2>
-                    <p className="mt-1 text-sm text-slate-600">Verification status: <span className="font-bold text-slate-800">{formatStatus(selectedVehicle.verificationStatus)}</span></p>
+                    <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">Verification status: <StatusBadge status={selectedVehicle.verificationStatus} /></p>
                   </div>
                   <button type="button" onClick={openEditForm} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#102a43] px-4 text-sm font-bold text-[#102a43] transition hover:bg-slate-50">Edit vehicle</button>
                 </div>

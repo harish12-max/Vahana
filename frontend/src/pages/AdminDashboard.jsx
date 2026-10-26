@@ -2,12 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../api/axiosInstance'
 import LogoutButton from '../components/LogoutButton.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 
 const getErrorMessage = (error, fallback) =>
   error.response?.data?.error?.message || fallback
-
-const formatStatus = (status) =>
-  status ? `${status.charAt(0)}${status.slice(1).toLowerCase()}` : 'Pending'
 
 const formatDocumentType = (type) => ({
   REGISTRATION_CERTIFICATE: 'Registration Certificate',
@@ -38,7 +36,7 @@ function ReviewActions({ item, kind, onReview, submitting }) {
           </button>
         </>
       ) : (
-        <span className="text-sm font-semibold text-slate-500">This item has already been reviewed.</span>
+        <span className="flex items-center gap-2 text-sm font-semibold text-slate-500"><StatusBadge status={item.verificationStatus} /> This item has already been reviewed.</span>
       )}
     </div>
   )

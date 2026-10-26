@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../api/axiosInstance'
 import LogoutButton from '../components/LogoutButton.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 
 const empty = { title: '', description: '', objectives: '', city: '', locality: '', startDate: '', endDate: '', requestedAutoCount: '' }
 const message = (error, fallback) => error.response?.data?.error?.message || fallback
-const label = (value) => value?.replace('_', ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+const label = (value) => <StatusBadge status={value} />
 
 export default function AdvertiserCampaigns() {
   const [campaigns, setCampaigns] = useState([]); const [form, setForm] = useState(empty); const [editingId, setEditingId] = useState(''); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [error, setError] = useState(''); const [success, setSuccess] = useState(''); const loadPromise = useRef(null)

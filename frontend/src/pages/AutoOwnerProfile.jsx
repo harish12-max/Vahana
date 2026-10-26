@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../api/axiosInstance'
 import LogoutButton from '../components/LogoutButton.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 
 const emptyProfile = {
   address: '',
@@ -22,9 +23,6 @@ const toFormValues = (profile) =>
 
 const getErrorMessage = (error, fallback) =>
   error.response?.data?.error?.message || fallback
-
-const formatVerificationStatus = (status) =>
-  status ? `${status.charAt(0)}${status.slice(1).toLowerCase()}` : 'Pending'
 
 function AutoOwnerProfile() {
   const [profile, setProfile] = useState(null)
@@ -182,8 +180,8 @@ function AutoOwnerProfile() {
               <h2 id="auto-owner-profile-heading" className="text-xl font-black text-[#102a43]">Address information</h2>
               <p className="mt-1 text-sm text-slate-600">All fields are required.</p>
               {profile?.verificationStatus && (
-                <p className="mt-2 text-sm font-semibold text-slate-700">
-                  Verification status: {formatVerificationStatus(profile.verificationStatus)}
+                <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  Verification status: <StatusBadge status={profile.verificationStatus} />
                 </p>
               )}
             </div>
