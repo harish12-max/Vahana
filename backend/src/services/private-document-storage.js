@@ -20,8 +20,8 @@ const parseKey = (key) => {
         if (
             !parsed ||
             typeof parsed.publicId !== 'string' ||
-            typeof parsed.secureUrl !== 'string' ||
-            !parsed.secureUrl.startsWith('https://res.cloudinary.com/')
+            !['image', 'raw'].includes(parsed.resourceType) ||
+            (parsed.format && !['pdf', 'jpg', 'png'].includes(parsed.format))
         ) {
             return null;
         }
@@ -33,15 +33,21 @@ const parseKey = (key) => {
 
 const uploadBuffer = (buffer, options) =>
     new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
+        const uploadStream = cloudinary.uploader.upload_stream(
             options,
             (error, result) => {
                 if (error) return reject(error);
-                if (!result) return reject(new Error('Cloudinary returned no upload result.'));
+                if (!result?.public_id || !result?.resource_type) {
+                    return reject(new Error('Cloudinary returned an invalid upload result.'));
+                }
                 return resolve(result);
-            }
+            },
         );
-        Readable.from([buffer]).pipe(stream);
+
+        uploadStream.on('error', reject);
+        const input = Readable.from([buffer]);
+        input.on('error', reject);
+        input.pipe(uploadStream);
     });
 
 const save = async (file) => {
@@ -50,42 +56,92 @@ const save = async (file) => {
         throw new Error('Unsupported document file type.');
     }
 
+    const resourceType = file.mimetype === 'application/pdf' ? 'raw' : 'image';
+    const publicId = crypto.randomUUID();
+    // Raw assets need their file extension in the public ID for reliable delivery.
+    const uploadPublicId = resourceType === 'raw' ? `${publicId}${extension}` : publicId;
+
     const result = await uploadBuffer(file.buffer, {
         folder: 'vahana/documents',
-        public_id: crypto.randomUUID(),
-        resource_type: 'image',
-        format: extension.slice(1),
+        public_id: uploadPublicId,
+        resource_type: resourceType,
         overwrite: false,
+        type: 'authenticated',
     });
 
     return JSON.stringify({
         publicId: result.public_id,
-        resourceType: 'image',
-        secureUrl: result.secure_url,
+        resourceType: result.resource_type,
+        format: result.format || extension.slice(1),
     });
+};
+
+const getSignedUrl = (asset) => {
+    // Cloudinary's private_download_url creates a signed URL with an expiry time.
+    return cloudinary.utils.private_download_url(
+        asset.publicId,
+        asset.format,
+        {
+            resource_type: asset.resourceType,
+            type: 'authenticated',
+            expires_at: Math.floor(Date.now() / 1000) + 60,
+        },
+    );
 };
 
 const read = async (key) => {
     const asset = parseKey(key);
+
+    // Compatibility with documents uploaded before Cloudinary was configured.
     if (!asset) {
-        if (!/^[0-9a-f-]{36}\\.(pdf|jpg|png)$/i.test(key)) return null;
+        if (typeof key !== 'string' || !/^[0-9a-f-]{36}\.(pdf|jpg|png)$/i.test(key)) {
+            return null;
+        }
+
+        const localPath = path.join(legacyDirectory, key);
         try {
-            await fs.access(path.join(legacyDirectory, key));
-            return createReadStream(path.join(legacyDirectory, key));
+            await fs.access(localPath);
+            return createReadStream(localPath);
         } catch (error) {
             if (error.code === 'ENOENT') return null;
             throw error;
         }
     }
 
+    const signedUrl = getSignedUrl(asset);
     return new Promise((resolve, reject) => {
-        const request = https.get(asset.secureUrl, (response) => {
+        const request = https.get(signedUrl, (response) => {
+            if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+                response.resume();
+                let redirectUrl;
+                try {
+                    redirectUrl = new URL(response.headers.location, signedUrl);
+                } catch (error) {
+                    return reject(new Error('Cloudinary returned an invalid redirect URL.'));
+                }
+                if (redirectUrl.protocol !== 'https:') {
+                    return reject(new Error('Cloudinary returned a non-HTTPS redirect URL.'));
+                }
+                https.get(redirectUrl, (redirectedResponse) => {
+                    if (redirectedResponse.statusCode !== 200) {
+                        redirectedResponse.resume();
+                        if ([401, 403, 404].includes(redirectedResponse.statusCode)) return resolve(null);
+                        return reject(new Error(`Cloudinary file request failed with status ${redirectedResponse.statusCode}.`));
+                    }
+                    return resolve(redirectedResponse);
+                }).on('error', reject);
+                return;
+            }
+
             if (response.statusCode !== 200) {
                 response.resume();
-                if (response.statusCode === 404) return resolve(null);
+                if ([401, 403, 404].includes(response.statusCode)) return resolve(null);
                 return reject(new Error(`Cloudinary file request failed with status ${response.statusCode}.`));
             }
             return resolve(response);
+        });
+        request.setTimeout(15000, () => {
+            request.destroy(new Error('Timed out while downloading the Cloudinary document.'));
         });
         request.on('error', reject);
     });
@@ -93,8 +149,9 @@ const read = async (key) => {
 
 const remove = async (key) => {
     const asset = parseKey(key);
+
     if (!asset) {
-        if (/^[0-9a-f-]{36}\\.(pdf|jpg|png)$/i.test(key)) {
+        if (typeof key === 'string' && /^[0-9a-f-]{36}\.(pdf|jpg|png)$/i.test(key)) {
             return fs.unlink(path.join(legacyDirectory, key)).catch((error) => {
                 if (error.code !== 'ENOENT') throw error;
             });
@@ -104,6 +161,7 @@ const remove = async (key) => {
 
     await cloudinary.uploader.destroy(asset.publicId, {
         resource_type: asset.resourceType,
+        type: 'authenticated',
         invalidate: true,
     });
 };
