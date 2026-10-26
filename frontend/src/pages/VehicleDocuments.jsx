@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../api/axiosInstance'
 import LogoutButton from '../components/LogoutButton.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 
 const maxFileSize = 5 * 1024 * 1024
 const allowedFileTypes = ['application/pdf', 'image/jpeg', 'image/png']
@@ -14,9 +15,6 @@ const documentTypes = [
 
 const getErrorMessage = (error, fallback) =>
   error.response?.data?.error?.message || fallback
-
-const formatStatus = (status) =>
-  status ? `${status.charAt(0)}${status.slice(1).toLowerCase()}` : 'Pending'
 
 const formatFileSize = (size) => {
   if (!Number.isFinite(size)) return 'Unknown size'
@@ -288,7 +286,7 @@ function VehicleDocuments() {
                           <div>
                             <h3 className="font-bold text-[#102a43]">{type?.label || document.documentType}</h3>
                             <p className="mt-1 break-all text-sm text-slate-600">{document.originalFilename} · {formatFileSize(document.fileSize)}</p>
-                            <p className="mt-2 text-sm font-semibold text-slate-700">Status: {formatStatus(document.verificationStatus)}</p>
+                            <p className="mt-2 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-700">Status: <StatusBadge status={document.verificationStatus} /></p>
                             {document.verificationStatus === 'REJECTED' && document.rejectionReason && <p className="mt-2 text-sm leading-6 text-red-700">Reason: {document.rejectionReason}</p>}
                           </div>
                           <button type="button" disabled={Boolean(downloadingId)} onClick={() => handleDownload(document)} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#102a43] px-3 text-sm font-bold text-[#102a43] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70">
