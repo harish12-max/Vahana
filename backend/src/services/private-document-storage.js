@@ -66,7 +66,7 @@ const save = async (file) => {
         public_id: uploadPublicId,
         resource_type: resourceType,
         overwrite: false,
-        type: 'authenticated',
+        type: 'upload',
     });
 
     return JSON.stringify({
@@ -77,16 +77,15 @@ const save = async (file) => {
 };
 
 const getSignedUrl = (asset) => {
-    // Cloudinary's private_download_url creates a signed URL with an expiry time.
-    return cloudinary.utils.private_download_url(
-        asset.publicId,
-        asset.format,
-        {
-            resource_type: asset.resourceType,
-            type: 'authenticated',
-            expires_at: Math.floor(Date.now() / 1000) + 60,
-        },
-    );
+    // Generate a short-lived signed URL; the route is protected by backend auth.
+    return cloudinary.url(asset.publicId, {
+        secure: true,
+        sign_url: true,
+        resource_type: asset.resourceType,
+        type: 'upload',
+        format: asset.format,
+        expires_at: Math.floor(Date.now() / 1000) + 60,
+    });
 };
 
 const read = async (key) => {
@@ -161,7 +160,7 @@ const remove = async (key) => {
 
     await cloudinary.uploader.destroy(asset.publicId, {
         resource_type: asset.resourceType,
-        type: 'authenticated',
+        type: 'upload',
         invalidate: true,
     });
 };
