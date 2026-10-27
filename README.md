@@ -6,10 +6,11 @@ Vahana is a web-based platform designed to connect vehicle owners with advertise
 
 | Resource | Link |
 |---|---|
-| Frontend Application | [Add your live frontend URL] |
-| Backend API | [Add your live backend URL] |
-| API Health Check |(http://localhost:5001/api/v1/health) |
+| Frontend Application | https://vahana-ten.vercel.app/ |
+| Backend API | https://vahana-8gu4.onrender.com |
+| API Health Check | https://vahana-8gu4.onrender.com/api/v1/health |
 | GitHub Repository | https://github.com/harish12-max/Vahana |
+| Video demo link | https://1drv.ms/v/c/e59715d6e51da736/IQBxLiHqZvfTTbwnTRNsmowKAcyOfplUFa-ngA5u56rZzEA?e=foheUx |
 
 ## Project Overview
 
