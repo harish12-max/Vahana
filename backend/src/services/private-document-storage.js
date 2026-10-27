@@ -77,14 +77,26 @@ const save = async (file) => {
 };
 
 const getSignedUrl = (asset) => {
-    // Generate a short-lived signed URL; the route is protected by backend auth.
+    // The backend route is authenticated; Cloudinary signs the temporary delivery URL.
+    if (asset.resourceType === 'raw') {
+        return cloudinary.utils.private_download_url(
+            asset.publicId,
+            asset.format,
+            {
+                resource_type: 'raw',
+                type: 'upload',
+                attachment: false,
+                expires_at: Math.floor(Date.now() / 1000) + 60,
+            },
+        );
+    }
+
     return cloudinary.url(asset.publicId, {
         secure: true,
         sign_url: true,
-        resource_type: asset.resourceType,
+        resource_type: 'image',
         type: 'upload',
         format: asset.format,
-        expires_at: Math.floor(Date.now() / 1000) + 60,
     });
 };
 
